@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SCSpendingTransparency.Client;
 using SCSpendingTransparency.Data;
@@ -59,8 +60,17 @@ namespace SCSpendingTransparency.Host
 									}
 
 									await db.SaveChangesAsync();
+
+									// we sleep for a quarter of a second after getting each payment export
+									Thread.Sleep(250);
 								}
+
+								// we also sleep for a quarter of a second after each category
+								Thread.Sleep(250);
 							}
+
+							// and finally we sleep another quarter of a second after each agency
+							Thread.Sleep(250);
 						}
 					}
 				}
