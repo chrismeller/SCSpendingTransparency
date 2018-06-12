@@ -100,6 +100,10 @@ namespace SCSpendingTransparency.Client
 
 		public async Task<List<MonthlyCategory>> GetMonthCategories(Agency agency, Year year, Month month)
 		{
+			// we actually only need to get new webforms values if we've done something other than searching for categories before, but we'll do it always
+			// since we've usually continued on to do something else at this point -- all this does is populate the last webforms values with the right info
+			await GetSearchValues();
+
 			using (var http = new HttpClient(_handler, false))
 			{
 				var postBody = new FormUrlEncodedContent(AddWebForms(new List<KeyValuePair<string, string>>()
@@ -113,10 +117,14 @@ namespace SCSpendingTransparency.Client
 				var response =
 					await http.PostAsync("https://applications.sc.gov/SpendingTransparency/MonthlyExpenditureSearch.aspx?etype=1",
 						postBody);
+				// make sure the request was successful before we continue
+				response.EnsureSuccessStatusCode();
+
 				var responseBody = await response.Content.ReadAsStringAsync();
 
 				var doc = new HtmlDocument();
 				doc.LoadHtml(responseBody);
+
 
 				// get all the table rows, excluding the first, which contains the headers
 				var tableRows =
