@@ -63,8 +63,8 @@ namespace SCSpendingTransparency.Host
 
 									foreach (var payment in payments)
 									{
-										service.CreatePayment(agency.SearchValue, agency.Text, category.Category, expense.Expense, payment.Payee, payment.DocId,
-											payment.TransactionDate, payment.Fund, payment.SubFund, payment.Amount);
+										service.CreatePayment(agency.SearchValue, agency.Text.Trim(), category.Category.Trim(), expense.Expense.Trim(), payment.Payee.Trim(), payment.DocId,
+											payment.TransactionDate, payment.Fund.Trim(), payment.SubFund.Trim(), payment.Amount);
 									}
 
 									await db.SaveChangesAsync();
