@@ -262,10 +262,10 @@ namespace SCSpendingTransparency.Client
 		{
 			return new WebFormsValues()
 			{
-				EventValidation = doc.DocumentNode.SelectSingleNode("//input[ @id='__EVENTVALIDATION' ]")
+				EventValidation = doc.DocumentNode.SelectSingleNode("//input[ @id='__EVENTVALIDATION' ]")?
 					.GetAttributeValue("value", ""),
-				ViewState = doc.DocumentNode.SelectSingleNode("//input[ @id='__VIEWSTATE' ]").GetAttributeValue("value", ""),
-				ViewStateGenerator = doc.DocumentNode.SelectSingleNode("//input[ @id='__VIEWSTATEGENERATOR' ]")
+				ViewState = doc.DocumentNode.SelectSingleNode("//input[ @id='__VIEWSTATE' ]")?.GetAttributeValue("value", ""),
+				ViewStateGenerator = doc.DocumentNode.SelectSingleNode("//input[ @id='__VIEWSTATEGENERATOR' ]")?
 					.GetAttributeValue("value", ""),
 			};
 		}
