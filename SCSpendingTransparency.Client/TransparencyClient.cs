@@ -225,10 +225,13 @@ namespace SCSpendingTransparency.Client
 			using (var http = new HttpClient(_handler, false))
 			{
 				// we have to first fetch the initial page to get webforms values
-				var getResponse = await http.GetStringAsync(expense.ExpenseUrl);
+				var getResponse = await http.GetAsync(expense.ExpenseUrl);
+				getResponse.EnsureSuccessStatusCode();
+
+				var getResponseContent = await getResponse.Content.ReadAsStringAsync();
 
 				var doc = new HtmlDocument();
-				doc.LoadHtml(getResponse);
+				doc.LoadHtml(getResponseContent);
 
 				_lastWebFormsValues = ParseWebForms(doc);
 
