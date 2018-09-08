@@ -269,6 +269,8 @@ namespace SCSpendingTransparency.Client
 					var csv = new CsvReader(stream);
 					csv.Configuration.TrimOptions = TrimOptions.Trim | TrimOptions.InsideQuotes;
 					csv.Configuration.RegisterClassMap<ExpensePaymentClassMap>();
+                    // looks like sometimes subfund can be "SubFund Title" and others "SubFund_Title" - fix that
+				    csv.Configuration.PrepareHeaderForMatch = header => header.Replace("_", " ");
 
 					return csv.GetRecords<MonthlyCategoryExpensePayment>().ToList();
 				}
