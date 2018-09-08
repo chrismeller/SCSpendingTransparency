@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using SCSpendingTransparency.Data;
 using SCSpendingTransparency.Data.Models;
+using Dapper;
 
 namespace SCSpendingTransparency.Domain
 {
@@ -14,7 +15,7 @@ namespace SCSpendingTransparency.Domain
 			_db = db;
 		}
 
-		public void CreatePayment(string agencyId, string agency, string category, string expense, string payee, string docId, DateTime transactionDate, string fund, string subFund, decimal amount)
+		public bool CreatePayment(string agencyId, string agency, string category, string expense, string payee, string docId, DateTime transactionDate, string fund, string subFund, decimal amount)
 		{
 			var payment = new Payment()
 			{
@@ -32,7 +33,47 @@ namespace SCSpendingTransparency.Domain
                 InsertedAt = DateTimeOffset.UtcNow,
 			};
 
-			_db.Payments.Add(payment);
+		    payment.Hash = PaymentHasher.Hash(payment);
+
+            var result = _db.Database.Connection.Execute(@"
+insert into payments ( 
+    Id, 
+    AgencyId, 
+    Agency, 
+    Amount, 
+    Category, 
+    DocId, 
+    Expense, 
+    Fund, 
+    Payee, 
+    SubFund, 
+    TransactionDate, 
+    InsertedAt,
+    Hash
+) values (
+    @Id, 
+    @AgencyId, 
+    @Agency, 
+    @Amount, 
+    @Category, 
+    @DocId, 
+    @Expense, 
+    @Fund, 
+    @Payee, 
+    @SubFund, 
+    @TransactionDate, 
+    @InsertedAt,
+    @Hash
+)", payment);
+
+		    if (result == 1)
+		    {
+		        return true;
+		    }
+		    else
+		    {
+		        throw new Exception("Error inserting Payment record!");
+		    }
 		}
 	}
 }
