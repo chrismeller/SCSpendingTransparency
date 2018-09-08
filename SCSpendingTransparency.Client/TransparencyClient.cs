@@ -22,7 +22,7 @@ namespace SCSpendingTransparency.Client
 
 		private WebFormsValues _lastWebFormsValues;
 
-		public TransparencyClient()
+		public TransparencyClient(string proxyHost = null, int proxyPort = 80, string proxyUser = null, string proxyPass = null)
 		{
 			_handler = new HttpClientHandler()
 			{
@@ -30,6 +30,20 @@ namespace SCSpendingTransparency.Client
 				UseCookies = true,
 				AllowAutoRedirect = true,
 			};
+
+		    if (!String.IsNullOrWhiteSpace(proxyHost))
+		    {
+		        _handler.UseProxy = true;
+		        _handler.Proxy = new WebProxy()
+		        {
+		            Address = new Uri($"{proxyHost}:{proxyPort}"),
+		        };
+
+		        if (!String.IsNullOrWhiteSpace(proxyUser))
+		        {
+		            _handler.Proxy.Credentials = new NetworkCredential(proxyUser, proxyPass);
+		        }
+		    }
 		}
 
 		public async Task<List<Year>> GetAvailableYears()
