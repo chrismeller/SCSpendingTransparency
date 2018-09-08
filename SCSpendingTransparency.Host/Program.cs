@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using SCSpendingTransparency.Client;
 using SCSpendingTransparency.Data;
 using SCSpendingTransparency.Domain;
@@ -58,17 +59,23 @@ namespace SCSpendingTransparency.Host
 
 									var payments = await client.GetMonthCategoryExpensePayments(expense);
 
-									Console.WriteLine("{0} payments", payments.Count);
+								    Console.WriteLine("{0} payments", payments.Count);
 
-									foreach (var payment in payments)
-									{
-										service.CreatePayment(agency.SearchValue, agency.Text.Trim(), category.Category.Trim(), expense.Expense.Trim(), payment.Payee.Trim(), payment.DocId,
-											payment.TransactionDate, payment.Fund.Trim(), payment.SubFund.Trim(), payment.Amount);
-									}
+                                    using (var scope = new TransactionScope())
+								    {
+								        foreach (var payment in payments)
+								        {
+								            service.CreatePayment(agency.SearchValue, agency.Text.Trim(),
+								                category.Category.Trim(), expense.Expense.Trim(), payment.Payee.Trim(),
+								                payment.DocId,
+								                payment.TransactionDate, payment.Fund.Trim(), payment.SubFund.Trim(),
+								                payment.Amount);
+								        }
 
-									await db.SaveChangesAsync();
+								        scope.Complete();
+								    }
 
-									// we sleep for a quarter of a second after getting each payment export
+								    // we sleep for a quarter of a second after getting each payment export
 									Thread.Sleep(250);
 								}
 
