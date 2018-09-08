@@ -314,13 +314,31 @@ namespace SCSpendingTransparency.Client
 		{
 			public ExpensePaymentClassMap()
 			{
-				AutoMap();
+			    Map(m => m.Payee).Name("Payee");
+                Map(m => m.DocId).Name("Doc ID");
+                Map(m => m.TransactionDate).Name("Transaction Date");
+                Map(m => m.Fund).Name("Fund Title");
+                // amount is always the last field, regardless of how many there are
+                Map(m => m.Amount).ConvertUsing(row => Convert.ToDecimal(row.GetField(row.Context.Record.Length - 1).Replace("$", "").Replace(",", "")));
 
-				Map(m => m.DocId).Name("Doc ID");
-				Map(m => m.TransactionDate).Name("Transaction Date");
-				Map(m => m.Fund).Name("Fund Title");
-				Map(m => m.SubFund).Name("SubFund_Title", "SubFund Title");
-				Map(m => m.Amount).ConvertUsing(row => Convert.ToDecimal(row.GetField("Amount").Replace("$", "").Replace(",", "")));
+                // subfund is a bitch, we have to try and piece it together
+			    Map(m => m.SubFund).ConvertUsing(row =>
+			    {
+			        // if there are only 6, this subfund doesn't have a comma, so just return the named field
+			        if (row.Context.Record.Length == 6)
+			        {
+			            return row.GetField("SubFund Title");
+			        }
+
+			        // otherwise, we need to combine anything between the Fund and Amount
+			        var pieces = new List<string>();
+			        for (var i = 4; i < row.Context.Record.Length - 1; i++)
+			        {
+			            pieces.Add(row.GetField(i));
+			        }
+
+			        return String.Join(", ", pieces);
+			    });
 			}
 		}
 	}
