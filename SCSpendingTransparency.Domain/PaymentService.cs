@@ -29,6 +29,7 @@ namespace SCSpendingTransparency.Domain
 				Payee = payee,
 				SubFund = subFund,
 				TransactionDate = transactionDate,
+                InsertedAt = DateTimeOffset.UtcNow,
 			};
 
 			_db.Payments.Add(payment);

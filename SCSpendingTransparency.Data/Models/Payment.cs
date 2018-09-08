@@ -41,5 +41,7 @@ namespace SCSpendingTransparency.Data.Models
 		[Index("IDX_TRANSACTIONDATE")]
 		public DateTime TransactionDate { get; set; }
 		public decimal Amount { get; set; }
+
+        public DateTimeOffset InsertedAt { get; set; }
 	}
 }
