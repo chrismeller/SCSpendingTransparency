@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,14 @@ namespace SCSpendingTransparency.Host
 
 		public static async Task Run()
 		{
-			using (var client = new TransparencyClient())
+		    var proxyHost = ConfigurationManager.AppSettings.Get("Proxy.Host");
+		    var proxyPort = (String.IsNullOrWhiteSpace(ConfigurationManager.AppSettings.Get("Proxy.Port")))
+		        ? 80
+		        : Convert.ToInt32(ConfigurationManager.AppSettings.Get("Proxy.Port"));
+		    var proxyUser = ConfigurationManager.AppSettings.Get("Proxy.User");
+		    var proxyPass = ConfigurationManager.AppSettings.Get("Proxy.Pass");
+
+			using (var client = new TransparencyClient(proxyHost, proxyPort, proxyUser, proxyPass))
 			using (var db = new ApplicationDbContext())
 			{
 				var service = new PaymentService(db);
