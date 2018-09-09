@@ -39,11 +39,27 @@ namespace SCSpendingTransparency.Host
 				{
 					foreach (var month in months.AsEnumerable().Reverse())
 					{
+					    var emptyAgenciesInMonth = 0;
+					    var emtpyAgenciesInMonthThreshold = 5;
+
 						foreach (var agency in agencies)
 						{
-							Console.WriteLine("Fetching {0} for {1}-{2}", agency.Text, year.Text, month.Text);
+						    if (emptyAgenciesInMonth >= emtpyAgenciesInMonthThreshold)
+						    {
+                                Console.WriteLine("Threshold reached, skipping {0} for {1}-{2}", agency.Text, year.Text, month.Text);
+						        continue;
+						    }
+
+                            Console.Write("Fetching {0} for {1}-{2} ", agency.Text, year.Text, month.Text);
 
 							var categories = await client.GetMonthCategories(agency, year, month);
+
+                            Console.WriteLine("{0} categories", categories.Count);
+
+						    if (categories.Count == 0)
+						    {
+						        emptyAgenciesInMonth++;
+						    }
 
 							foreach (var category in categories)
 							{
