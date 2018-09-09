@@ -61,9 +61,14 @@ namespace SCSpendingTransparency.Host
 
 								    Console.WriteLine("{0} payments", payments.Count);
 
-                                    using (var scope = new TransactionScope())
-								    {
-								        foreach (var payment in payments)
+                                    using (var scope = new TransactionScope(TransactionScopeOption.Required,
+                                        new TransactionOptions
+                                        {
+                                            IsolationLevel = IsolationLevel.ReadCommitted,
+                                            Timeout = TransactionManager.MaximumTimeout,
+                                        }))
+                                    {
+                                        foreach (var payment in payments)
 								        {
 								            service.CreatePayment(agency.SearchValue, agency.Text.Trim(),
 								                category.Category.Trim(), expense.Expense.Trim(), payment.Payee.Trim(),
