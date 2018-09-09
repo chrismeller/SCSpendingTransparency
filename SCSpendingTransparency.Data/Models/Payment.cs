@@ -45,7 +45,7 @@ namespace SCSpendingTransparency.Data.Models
         public DateTimeOffset InsertedAt { get; set; }
 
         [Index("UK_HASH", IsUnique = true)]
-        [MaxLength(128)]
+        [MaxLength(64)]
         public string Hash { get; set; }
 	}
 }

@@ -25,12 +25,12 @@ namespace SCSpendingTransparency.Domain
 
             var syntheticKey = String.Join("|", pieces);
 
-            return Sha512(syntheticKey);
+            return Sha256(syntheticKey);
         }
 
-        private static string Sha512(string input)
+        private static string Sha256(string input)
         {
-            var sha = SHA512.Create();
+            var sha = SHA256.Create();
             var inputBytes = Encoding.UTF8.GetBytes(input);
 
             var hashBytes = sha.ComputeHash(inputBytes);
