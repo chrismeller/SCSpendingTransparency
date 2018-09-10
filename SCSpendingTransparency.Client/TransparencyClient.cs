@@ -264,7 +264,12 @@ namespace SCSpendingTransparency.Client
 				var lines = responseBody.Split(new []{ '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 				var csvContents = String.Join("\r\n", lines.Reverse().Take(lines.Length - 6).Reverse());
 
-				using (var stream = new StringReader(csvContents))
+                // there is also a case where a record ends up looking like this:
+                //      MOTOROLA INC,3406569007,6/1/2015,Earmarked,"""HIGHWAY PATROL FEES,FINES, & ASSESSME,$88151.6500
+                // this is the only case where i've seen double quotes, so we're just going to blindly replace them all, since textual fields aren't quoted anyway
+			    csvContents = csvContents.Replace("\"\"\"", "");
+
+                using (var stream = new StringReader(csvContents))
 				{
 					var csv = new CsvReader(stream);
 					csv.Configuration.TrimOptions = TrimOptions.Trim | TrimOptions.InsideQuotes;
