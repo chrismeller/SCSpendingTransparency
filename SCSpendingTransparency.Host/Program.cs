@@ -40,7 +40,10 @@ namespace SCSpendingTransparency.Host
 				{
 					foreach (var month in months.AsEnumerable().Reverse())
 					{
-					    var emptyAgenciesInMonth = 0;
+                        // tracks whether or not we have found data for any agencies so far in this month
+					    var haveGottenDataForMonth = false;
+
+                        // if haveGottenDataForMonth is false by the time we get to this agency in the list, we'll skip the rest
 					    var emtpyAgenciesInMonthThreshold = 5;
 
 						foreach (var agency in agencies)
@@ -51,15 +54,23 @@ namespace SCSpendingTransparency.Host
 						        continue;
 						    }
 
+						    if (haveGottenDataForMonth == false &&
+						        agencies.IndexOf(agency) > emtpyAgenciesInMonthThreshold)
+						    {
+						        Console.WriteLine("Threshold reached, skipping {0} for {1}-{2}", agency.Text, year.Text,
+						            month.Text);
+                                continue;
+						    }
+
                             Console.Write("Fetching {0} for {1}-{2} ", agency.Text, year.Text, month.Text);
 
 							var categories = await client.GetMonthCategories(agency, year, month);
 
                             Console.WriteLine("{0} categories", categories.Count);
 
-						    if (categories.Count == 0)
+						    if (categories.Count > 0)
 						    {
-						        emptyAgenciesInMonth++;
+						        haveGottenDataForMonth = true;
 						    }
 
 							foreach (var category in categories)
