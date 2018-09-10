@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,11 +87,32 @@ namespace SCSpendingTransparency.Host
                                     {
                                         foreach (var payment in payments)
 								        {
-								            service.CreatePayment(agency.SearchValue, agency.Text.Trim(),
-								                category.Category.Trim(), expense.Expense.Trim(), payment.Payee.Trim(),
-								                payment.DocId,
-								                payment.TransactionDate, payment.Fund.Trim(), payment.SubFund.Trim(),
-								                payment.Amount);
+								            try
+								            {
+								                service.CreatePayment(agency.SearchValue, agency.Text.Trim(),
+								                    category.Category.Trim(), expense.Expense.Trim(),
+								                    payment.Payee.Trim(),
+								                    payment.DocId,
+								                    payment.TransactionDate, payment.Fund.Trim(),
+								                    payment.SubFund.Trim(),
+								                    payment.Amount);
+								            }
+								            catch (SqlException sqlE)
+								            {
+								                if (sqlE.Number == 2601)
+								                {
+								                    Console.WriteLine("Skipping duplicate expense...");
+								                }
+								                else
+								                {
+								                    throw;
+								                }
+								            }
+								            catch (Exception e)
+								            {
+								                Console.WriteLine("Error inserting record!");
+								                throw;
+								            }
 								        }
 
 								        scope.Complete();
