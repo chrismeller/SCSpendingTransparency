@@ -37,7 +37,7 @@ namespace SCSpendingTransparency.Host
 			using (var client = new TransparencyClient(proxyHost, proxyPort, proxyUser, proxyPass))
 			using (var db = new ApplicationDbContext())
 			{
-				var service = new PaymentService(db);
+				var service = new PaymentService(db, logger);
 
 				var years = await client.GetAvailableYears();
 				var months = await client.GetAvailableMonths();

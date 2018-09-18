@@ -3,16 +3,19 @@ using System.Threading.Tasks;
 using SCSpendingTransparency.Data;
 using SCSpendingTransparency.Data.Models;
 using Dapper;
+using NLog;
 
 namespace SCSpendingTransparency.Domain
 {
 	public class PaymentService
 	{
 		private readonly ApplicationDbContext _db;
+        private readonly ILogger _logger;
 
-		public PaymentService(ApplicationDbContext db)
+		public PaymentService(ApplicationDbContext db, ILogger logger)
 		{
-			_db = db;
+		    _db = db;
+		    _logger = logger;
 		}
 
 		public bool CreatePayment(string agencyId, string agency, string category, string expense, string payee, string docId, DateTime transactionDate, string fund, string subFund, decimal amount)
