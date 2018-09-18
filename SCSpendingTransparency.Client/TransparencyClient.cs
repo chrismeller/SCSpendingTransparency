@@ -258,6 +258,8 @@ namespace SCSpendingTransparency.Client
 				var postBody = new FormUrlEncodedContent(postValues);
 
 				var response = await http.PostAsync(expense.ExpenseUrl, postBody);
+			    response.EnsureSuccessStatusCode();
+
 				var responseBody = await response.Content.ReadAsStringAsync();
 
 				// trim the first 6 lines, they are header crap
@@ -271,13 +273,20 @@ namespace SCSpendingTransparency.Client
 
                 using (var stream = new StringReader(csvContents))
 				{
-					var csv = new CsvReader(stream);
-					csv.Configuration.TrimOptions = TrimOptions.Trim | TrimOptions.InsideQuotes;
-					csv.Configuration.RegisterClassMap<ExpensePaymentClassMap>();
-                    // looks like sometimes subfund can be "SubFund Title" and others "SubFund_Title" - fix that
-				    csv.Configuration.PrepareHeaderForMatch = header => header.Replace("_", " ");
+				    try
+				    {
+				        var csv = new CsvReader(stream);
+				        csv.Configuration.TrimOptions = TrimOptions.Trim | TrimOptions.InsideQuotes;
+				        csv.Configuration.RegisterClassMap<ExpensePaymentClassMap>();
+				        // looks like sometimes subfund can be "SubFund Title" and others "SubFund_Title" - fix that
+				        csv.Configuration.PrepareHeaderForMatch = header => header.Replace("_", " ");
 
-					return csv.GetRecords<MonthlyCategoryExpensePayment>().ToList();
+				        return csv.GetRecords<MonthlyCategoryExpensePayment>().ToList();
+				    }
+				    catch (Exception e)
+				    {
+				        throw new Exception("Unable to parse expenses from CSV!", e);
+				    }
 				}
 			}
 		}
