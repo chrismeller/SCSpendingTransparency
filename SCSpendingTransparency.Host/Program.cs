@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using NLog;
 using SCSpendingTransparency.Client;
 using SCSpendingTransparency.Data;
 using SCSpendingTransparency.Domain;
@@ -20,12 +21,18 @@ namespace SCSpendingTransparency.Host
 
 		public static async Task Run()
 		{
-		    var proxyHost = ConfigurationManager.AppSettings.Get("Proxy.Host");
+		    var logger = LogManager.GetLogger("Default");
+
+		    logger.Info("Beginning execution.");
+
+            var proxyHost = ConfigurationManager.AppSettings.Get("Proxy.Host");
 		    var proxyPort = (String.IsNullOrWhiteSpace(ConfigurationManager.AppSettings.Get("Proxy.Port")))
 		        ? 80
 		        : Convert.ToInt32(ConfigurationManager.AppSettings.Get("Proxy.Port"));
 		    var proxyUser = ConfigurationManager.AppSettings.Get("Proxy.User");
 		    var proxyPass = ConfigurationManager.AppSettings.Get("Proxy.Pass");
+
+		    logger.Debug("Using configured proxy server {0}", proxyHost);
 
 			using (var client = new TransparencyClient(proxyHost, proxyPort, proxyUser, proxyPass))
 			using (var db = new ApplicationDbContext())
@@ -38,8 +45,12 @@ namespace SCSpendingTransparency.Host
 
 				foreach (var year in years.AsEnumerable().Reverse())
 				{
+				    logger.Info("Executing year {0}", year.SearchValue);
+
 					foreach (var month in months.AsEnumerable().Reverse())
 					{
+					    logger.Info("Executing month {0} for year {1}", month.SearchValue, year.SearchValue);
+
                         // tracks whether or not we have found data for any agencies so far in this month
 					    var haveGottenDataForMonth = false;
 
@@ -66,7 +77,7 @@ namespace SCSpendingTransparency.Host
 
 							var categories = await client.GetMonthCategories(agency, year, month);
 
-                            Console.WriteLine("{0} categories", categories.Count);
+                            logger.Info("{0} categories", categories.Count);
 
 						    if (categories.Count > 0)
 						    {
@@ -75,15 +86,15 @@ namespace SCSpendingTransparency.Host
 
 							foreach (var category in categories)
 							{
-								Console.Write("\tCategory {0} ", category.Category);
+								logger.Info("\tCategory {0} ", category.Category);
 
 								var expenses = await client.GetMonthCategoryExpenses(category);
 
-								Console.WriteLine("{0} expenses", expenses.Count);
+								logger.Info("{0} expenses", expenses.Count);
 
 								foreach (var expense in expenses)
 								{
-									Console.Write("\t\tExpense {0} ", expense.Expense);
+									logger.Info("\t\tExpense {0} ", expense.Expense);
 
 									var payments = await client.GetMonthCategoryExpensePayments(expense);
 
