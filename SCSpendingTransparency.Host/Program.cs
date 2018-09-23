@@ -17,6 +17,8 @@ namespace SCSpendingTransparency.Host
 		static void Main(string[] args)
 		{
 			Run().ConfigureAwait(false).GetAwaiter().GetResult();
+		    Console.WriteLine("Done!");
+		    Console.ReadLine();
 		}
 
 		public static async Task Run()
@@ -43,6 +45,7 @@ namespace SCSpendingTransparency.Host
 				var months = await client.GetAvailableMonths();
 				var agencies = await client.GetAvailableAgencies();
 
+			    var resume = false;
 				foreach (var year in years.AsEnumerable().Reverse())
 				{
 				    logger.Info("Executing year {0}", year.SearchValue);
@@ -59,21 +62,30 @@ namespace SCSpendingTransparency.Host
 
 						foreach (var agency in agencies)
 						{
-						    if (emptyAgenciesInMonth >= emtpyAgenciesInMonthThreshold)
+						    if (year.SearchValue == "2017" && month.SearchValue == "5" &&
+						        agency.Text.ToLower().Contains("dept of natural"))
 						    {
-                                Console.WriteLine("Threshold reached, skipping {0} for {1}-{2}", agency.Text, year.Text, month.Text);
+						        resume = true;
+						    }
+
+						    if (resume == false)
+						    {
+                                logger.Info("Skipping for resume {0} for {1}-{2}", agency.Text, year.Text, month.Text);
 						        continue;
 						    }
 
-						    if (haveGottenDataForMonth == false &&
-						        agencies.IndexOf(agency) > emtpyAgenciesInMonthThreshold)
-						    {
-						        Console.WriteLine("Threshold reached, skipping {0} for {1}-{2}", agency.Text, year.Text,
-						            month.Text);
-                                continue;
-						    }
+						    logger.Info("Executing agency {0} for {1}-{2}", agency.SearchValue, year.SearchValue,
+						        month.SearchValue);
 
-                            Console.Write("Fetching {0} for {1}-{2} ", agency.Text, year.Text, month.Text);
+                            //if (haveGottenDataForMonth == false &&
+                            //    agencies.IndexOf(agency) > emtpyAgenciesInMonthThreshold)
+                            //{
+                            //    logger.Debug("Threshold reached, skipping {0} for {1}-{2}", agency.Text, year.Text,
+                            //        month.Text);
+                            //    continue;
+                            //}
+
+                            logger.Info("Fetching {0} for {1}-{2} ", agency.Text, year.Text, month.Text);
 
 							var categories = await client.GetMonthCategories(agency, year, month);
 
