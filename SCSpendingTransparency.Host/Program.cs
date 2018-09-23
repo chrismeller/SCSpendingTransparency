@@ -98,50 +98,30 @@ namespace SCSpendingTransparency.Host
 
 									var payments = await client.GetMonthCategoryExpensePayments(expense);
 
-								    Console.WriteLine("{0} payments", payments.Count);
+								    logger.Info("{0} payments", payments.Count);
 
-                                    using (var scope = new TransactionScope(TransactionScopeOption.Required,
-                                        new TransactionOptions
-                                        {
-                                            IsolationLevel = IsolationLevel.ReadCommitted,
-                                            Timeout = TransactionManager.MaximumTimeout,
-                                        }))
-                                    {
-                                        foreach (var payment in payments)
-								        {
-								            try
-								            {
-								                service.CreatePayment(agency.SearchValue, agency.Text.Trim(),
-								                    category.Category.Trim(), expense.Expense.Trim(),
-								                    payment.Payee.Trim(),
-								                    payment.DocId,
-								                    payment.TransactionDate, payment.Fund.Trim(),
-								                    payment.SubFund.Trim(),
-								                    payment.Amount);
-								            }
-								            catch (SqlException sqlE)
-								            {
-								                if (sqlE.Number == 2601)
-								                {
-								                    Console.WriteLine("Skipping duplicate expense...");
-								                }
-								                else
-								                {
-								                    throw;
-								                }
-								            }
-								            catch (Exception e)
-								            {
-								                Console.WriteLine("Error inserting record!");
-								                throw;
-								            }
-								        }
+								    var forWrite = payments.Select(x => new PaymentForWrite()
+								    {
+                                        Agency = agency.Text.Trim(),
+                                        AgencyId = agency.SearchValue,
+                                        Amount = x.Amount,
+                                        Category = category.Category.Trim(),
+                                        DocId = x.DocId,
+                                        Expense = expense.Expense.Trim(),
+                                        Fund = x.Fund.Trim(),
+                                        Payee = x.Payee.Trim(),
+                                        SubFund = x.SubFund.Trim(),
+                                        TransactionDate = x.TransactionDate,
+								    });
 
-								        scope.Complete();
-								    }
+								    logger.Debug("Writing batch of payments.");
 
-								    // we sleep for a quarter of a second after getting each payment export
-									Thread.Sleep(250);
+								    await service.CreatePaymentBatch(forWrite);
+
+								    logger.Debug("Batch complete.");
+
+                                    // we sleep for a quarter of a second after getting each payment export
+                                    Thread.Sleep(250);
 								}
 
 								// we also sleep for a quarter of a second after each category
