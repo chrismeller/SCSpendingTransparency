@@ -18,7 +18,7 @@ namespace SCSpendingTransparency.Data.Models
 
 		[Index("IDX_AGENCY_CATEGORY", 1)]
 		[Index("IDX_AGENCY_CATEGORY_EXPENSE", 1)]
-		[MaxLength(75)]
+		[MaxLength(125)]
 		public string Category { get; set; }
 
 		[Index("IDX_AGENCY_CATEGORY_EXPENSE", 2)]
