@@ -119,7 +119,7 @@ insert into payments (
 	                }
 	                catch (Exception e)
 	                {
-	                    _logger.Error("Error inserting record!", e);
+	                    _logger.Error(e, "Error inserting record!");
 	                    throw;
 	                }
 
